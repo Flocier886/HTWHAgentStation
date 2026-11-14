@@ -1,0 +1,5 @@
+spring:
+  config:
+    name: HWAgentStation-app
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}

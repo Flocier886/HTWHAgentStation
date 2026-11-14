@@ -1,0 +1,7 @@
+.git
+.env
+.idea
+.mvn
+**/target
+**/data
+docs

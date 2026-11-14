@@ -1,0 +1,90 @@
+server:
+  port: ${APP_PORT:8091}
+
+# 线程池配置
+thread:
+  pool:
+    executor:
+      config:
+        core-pool-size: 20
+        max-pool-size: 50
+        keep-alive-time: 5000
+        block-queue-size: 5000
+        policy: CallerRunsPolicy
+
+# 数据库配置
+spring:
+  datasource:
+    mysql:
+      username: ${MYSQL_USER:agent}
+      password: ${MYSQL_PASSWORD}
+      url: ${MYSQL_URL:jdbc:mysql://localhost:3306/ai_agent_station?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      type: com.zaxxer.hikari.HikariDataSource
+      hikari:
+        pool-name: Retail_HikariCP
+        minimum-idle: 15 #最小空闲连接数量
+        idle-timeout: 180000 #空闲连接存活最大时间，默认600000（10分钟）
+        maximum-pool-size: 25 #连接池最大连接数，默认是10
+        auto-commit: true  #此属性控制从池返回的连接的默认自动提交行为,默认值：true
+        max-lifetime: 1800000 #此属性控制池中连接的最长生命周期，值0表示无限生命周期，默认1800000即30分钟
+        connection-timeout: 30000 #数据库连接超时时间,默认30秒，即30000
+        connection-test-query: SELECT 1
+    pgvector:
+      driver-class-name: org.postgresql.Driver
+      username: ${POSTGRES_USER:agent}
+      password: ${POSTGRES_PASSWORD}
+      url: ${PGVECTOR_URL:jdbc:postgresql://localhost:5432/ai_rag_knowledge}
+      type: com.zaxxer.hikari.HikariDataSource
+      hikari:
+        maximum-pool-size: 5
+        minimum-idle: 2
+        idle-timeout: 30000
+        connection-timeout: 30000
+  ai:
+    openai:
+      base-url: ${OPENAI_BASE_URL:https://api.openai.com}
+      api-key: ${OPENAI_API_KEY}
+    agent:
+      auto-config:
+        enabled: false
+        client-ids: 6101
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USER:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    topic:
+      sync_rag_es: ai.agent.sync.rag.es
+
+# BGE reranker 容器（wkao/bge-reranker-v2-m3）；生产环境请按需改成实际内网/网关地址与密钥
+rerank:
+  base-url: ${RERANK_BASE_URL:http://localhost:6006}
+  api-key: ${RERANK_API_KEY:}
+  max-candidates: 48
+
+# BM25 关键词召回（Elasticsearch）
+bm25:
+  es:
+    base-url: ${ES_BASE_URL:http://localhost:9200}
+    index: rag_knowledge_v1
+    content-field: content
+    knowledge-filter-field: knowledge_tag
+    timeout-ms: 15000
+
+# 异步同步 ES（RabbitMQ 消费端写入）
+sync:
+  es:
+    base-url: ${ES_BASE_URL:http://localhost:9200}
+    index: rag_knowledge_v1
+
+#mybatis:
+#  mapper-locations: classpath:/mybatis/mapper/*.xml
+#  config-location:  classpath:/mybatis/config/mybatis-config.xml
+
+# 日志
+logging:
+  level:
+    root: info
+  config: classpath:logback-spring.xml
